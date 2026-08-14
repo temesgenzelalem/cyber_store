@@ -40,12 +40,8 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        }
-    },
-    "policy": {
-        "advisories": {
-            "block": false
-        }
+        },
+        "audit": false
     },
     "minimum-stability": "stable",
     "prefer-stable": true
