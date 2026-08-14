@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Install high-speed PHP extensions (minimal set for initial launch speed)
+# Install system dependencies and PHP extensions using a faster installer
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/install-php-extensions && \
@@ -29,7 +29,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV COMPOSER_NO_AUDIT=1
 
-# Install dependencies (Standard Laravel 10)
+# Install dependencies (Force skip audits and security blocks)
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Update Apache document root
