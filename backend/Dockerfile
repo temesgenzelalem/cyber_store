@@ -1,4 +1,4 @@
-FROM php:8.2.19-apache
+FROM php:8.2-apache
 
 # Install high-speed PHP extensions
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
