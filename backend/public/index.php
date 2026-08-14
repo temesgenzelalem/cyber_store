@@ -1,24 +1,22 @@
 <?php
 
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
+
+define('LARAVEL_START', microtime(true));
+
+if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+    require $maintenance;
+}
+
 require __DIR__.'/../vendor/autoload.php';
+
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-try {
-    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
-    echo "<h1>KERNEL CREATED SUCCESSFULLY</h1>";
+$kernel = $app->make(Kernel::class);
 
-    $response = $kernel->handle(
-        $request = Illuminate\Http\Request::capture()
-    );
-    echo "<h1>REQUEST HANDLED SUCCESSFULLY</h1>";
+$response = $kernel->handle(
+    $request = Request::capture()
+)->send();
 
-    $response->send();
-    $kernel->terminate($request, $response);
-
-} catch (\Throwable $e) {
-    echo "<h1>CRASH IN INDEX.PHP</h1>";
-    echo "<p>Error: " . $e->getMessage() . "</p>";
-    echo "<p>File: " . $e->getFile() . " on line " . $e->getLine() . "</p>";
-    echo "<pre>" . $e->getTraceAsString() . "</pre>";
-    exit;
-}
+$kernel->terminate($request, $response);
