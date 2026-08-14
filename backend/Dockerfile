@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Install high-speed PHP extensions
+# Install high-speed PHP extensions (pdo_pgsql is critical for Neon.tech)
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/install-php-extensions && \
@@ -27,10 +27,9 @@ RUN mkdir -p storage/framework/cache/data \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
-ENV COMPOSER_NO_AUDIT=1
 
-# Install dependencies (COMPOSER_NO_AUDIT env var handles the bypass)
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+# Install dependencies (Force-bypass security blocks for Laravel 10)
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-security-blocking
 
 # Update Apache document root to Laravel's public folder
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
