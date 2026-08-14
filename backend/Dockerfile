@@ -42,6 +42,9 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-s
 
 EXPOSE 80
 
+# TEMPORARY: Enable debug to see the 500 error cause
+ENV APP_DEBUG=true
+
 # Professional Start Script
 RUN echo '#!/bin/sh\n\
 # Set permissions again at runtime to be 100% sure\n\
