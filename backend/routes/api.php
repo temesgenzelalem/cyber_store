@@ -11,6 +11,10 @@ use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AddressController;
 
+Route::get('/test', function () {
+    return response()->json(['status' => 'ok', 'message' => 'Backend is working!']);
+});
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
