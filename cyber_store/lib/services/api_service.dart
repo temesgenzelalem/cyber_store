@@ -6,7 +6,7 @@ import '../models/models.dart';
 class ApiService {
   // IMPORTANT: For physical phone testing, replace 'YOUR_LOCAL_IP'
   // with your computer's actual IP address (e.g., 192.168.1.5)
-  static const String baseUrl = 'http://YOUR_LOCAL_IP:8000/api';
+  static const String baseUrl = 'https://cyber-store-hi32.onrender.com/api';
 
   String? _token;
 

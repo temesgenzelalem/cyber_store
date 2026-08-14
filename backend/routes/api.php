@@ -27,6 +27,27 @@ use App\Http\Controllers\Api\VerificationController;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/diag', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate:status');
+        $migrateStatus = \Illuminate\Support\Facades\Artisan::output();
+
+        return response()->json([
+            'status' => 'ok',
+            'database' => \Illuminate\Support\Facades\DB::connection()->getDatabaseName(),
+            'migrate_status' => $migrateStatus,
+            'env' => app()->environment(),
+            'debug' => config('app.debug'),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
 Route::get('/test', function () {
     return response()->json(['status' => 'ok', 'message' => 'Backend is working!']);
 });
