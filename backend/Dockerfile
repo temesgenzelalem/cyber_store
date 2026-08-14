@@ -28,7 +28,8 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-audit
 
 # Update Apache document root to Laravel's public folder
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
