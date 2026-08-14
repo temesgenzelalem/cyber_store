@@ -1,10 +1,10 @@
 FROM php:8.2-apache
 
-# Install high-speed PHP extensions (removed slow-compiling GD for initial speed)
+# Install high-speed PHP extensions (minimal set for initial launch speed)
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/install-php-extensions && \
-    install-php-extensions pdo_pgsql bcmath zip intl
+    install-php-extensions pdo_pgsql bcmath zip
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -27,9 +27,10 @@ RUN mkdir -p storage/framework/cache/data \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV COMPOSER_NO_AUDIT=1
 
 # Install dependencies (Standard Laravel 10)
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-audit
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Update Apache document root
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
