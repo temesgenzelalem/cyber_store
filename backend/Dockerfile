@@ -2,17 +2,16 @@ FROM php:8.2.20-apache
 
 # Install high-speed PHP extensions
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-
 RUN chmod +x /usr/local/bin/install-php-extensions && \
-    install-php-extensions pdo_pgsql bcmath zip gd
+    install-php-extensions pdo_pgsql zip bcmath gd
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
 # Update Apache document root correctly
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+RUN sed -i 's|/var/www/html|/var/www/html/public|g' /etc/apache2/apache2.conf
 
 # Set working directory
 WORKDIR /var/www/html
@@ -26,7 +25,6 @@ RUN mkdir -p storage/framework/cache/data \
              storage/framework/views \
              storage/logs \
              bootstrap/cache && \
-    touch storage/logs/laravel.log && \
     chown -R www-data:www-data /var/www/html && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
@@ -40,16 +38,16 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-s
 
 EXPOSE 80
 
-# Professional Start Script (Immortal)
+# TEMPORARY: Force debug mode to see errors
+ENV APP_DEBUG=true
+
+# Professional Start Script
 RUN echo '#!/bin/sh\n\
-# Force correct permissions again at runtime\n\
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache\n\
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache\n\
 \n\
-# Run migrations, but ignore errors so the server starts anyway\n\
-php artisan migrate --force || echo "Migration failed but starting anyway..."\n\
+php artisan migrate --force || echo "Migration failed but starting..."\n\
 \n\
-# Clear caches to ensure fresh config is loaded\n\
 php artisan config:clear\n\
 php artisan route:clear\n\
 \n\
