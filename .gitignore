@@ -1,0 +1,32 @@
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# Environment
+.env
+backend/.env
+backend/storage/*.key
+
+# Laravel
+backend/vendor/
+backend/public/storage
+backend/storage/*.zd
+backend/storage/framework/cache/data/*
+backend/storage/framework/views/*
+backend/storage/framework/sessions/*
+backend/storage/logs/*
+backend/.phpunit.result.cache
+
+# Misc
+.DS_Store
+node_modules/
+.artifacts/
