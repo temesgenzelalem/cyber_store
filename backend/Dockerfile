@@ -9,19 +9,24 @@ RUN chmod +x /usr/local/bin/install-php-extensions && \
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
+# Update Apache document root to Laravel's public folder correctly
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
 # Set working directory
 WORKDIR /var/www/html
 
 # Copy project files
 COPY . .
 
-# Ensure standard Laravel directories exist
+# Ensure standard Laravel directories exist and are writable
 RUN mkdir -p storage/framework/cache/data \
              storage/framework/sessions \
              storage/framework/views \
              storage/logs \
              bootstrap/cache && \
-    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chown -R www-data:www-data /var/www/html && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Install Composer
@@ -32,21 +37,12 @@ ENV COMPOSER_NO_AUDIT=1
 # Install dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-security-blocking
 
-# Update Apache document root
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
 EXPOSE 80
 
-# TEMPORARY: Enable debug to see the 500 error cause
-ENV APP_DEBUG=true
-
-# Improved startup script
+# Professional Start Script
 RUN echo '#!/bin/sh\n\
 php artisan migrate --force\n\
 php artisan config:clear\n\
-php artisan clear-compiled\n\
 apache2-foreground' > /usr/local/bin/start.sh
 
 RUN chmod +x /usr/local/bin/start.sh
