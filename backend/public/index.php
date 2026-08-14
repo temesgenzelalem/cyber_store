@@ -1,16 +1,22 @@
 <?php
 
-try {
-    require __DIR__.'/../vendor/autoload.php';
-    $app = require_once __DIR__.'/../bootstrap/app.php';
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
 
-    echo "<h1>LARAVEL BOOTSTRAPPED SUCCESSFULLY</h1>";
-    exit;
+define('LARAVEL_START', microtime(true));
 
-} catch (\Throwable $e) {
-    echo "<h1>APPLICATION CRASH</h1>";
-    echo "<p>Error: " . $e->getMessage() . "</p>";
-    echo "<p>File: " . $e->getFile() . " on line " . $e->getLine() . "</p>";
-    echo "<pre>" . $e->getTraceAsString() . "</pre>";
-    exit;
+if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+    require $maintenance;
 }
+
+require __DIR__.'/../vendor/autoload.php';
+
+$app = require_once __DIR__.'/../bootstrap/app.php';
+
+$kernel = $app->make(Kernel::class);
+
+$response = $kernel->handle(
+    $request = Request::capture()
+)->send();
+
+$kernel->terminate($request, $response);
