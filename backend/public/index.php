@@ -1,4 +1,5 @@
 <?php
+// VERSION: 3.0.0 (FINAL RESTORE)
 
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
