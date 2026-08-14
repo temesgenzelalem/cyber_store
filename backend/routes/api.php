@@ -10,16 +10,26 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\AddressController;
-
-Route::get('/test', function () {
-    return response()->json(['status' => 'ok', 'message' => 'Backend is working!']);
-});
+use App\Http\Controllers\Api\AiController;
+use App\Http\Controllers\Api\LoyaltyController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\ReferralController;
+use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\AdminOrderController;
+use App\Http\Controllers\Api\AdminCouponController;
+use App\Http\Controllers\Api\AdminProductController;
+use App\Http\Controllers\Api\AdminProfileController;
+use App\Http\Controllers\Api\VerificationController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
 */
+
+Route::get('/test', function () {
+    return response()->json(['status' => 'ok', 'message' => 'Backend is working!']);
+});
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -85,7 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/loyalty/history', [LoyaltyController::class, 'history']);
 
     // Admin Routes
-    Route::middleware('can:admin')->prefix('admin')->group(function () {
+    Route::middleware('admin')->prefix('admin')->group(function () {
         Route::post('/products', [AdminProductController::class, 'store']);
         Route::put('/products/{product}', [AdminProductController::class, 'update']);
         Route::delete('/products/{product}', [AdminProductController::class, 'destroy']);
@@ -104,9 +114,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/coupons/{coupon}', [AdminCouponController::class, 'destroy']);
 
         // Admin AI
-        Route::post('/ai/description', [\App\Http\Controllers\Api\AiController::class, 'generateDescription']);
-        Route::post('/ai/analyze', [\App\Http\Controllers\Api\AiController::class, 'analyzeBusiness']);
-        Route::post('/ai/parse', [\App\Http\Controllers\Api\AiController::class, 'parseProductInfo']);
+        Route::post('/ai/description', [AiController::class, 'generateDescription']);
+        Route::post('/ai/analyze', [AiController::class, 'analyzeBusiness']);
+        Route::post('/ai/parse', [AiController::class, 'parseProductInfo']);
     });
 });
 
