@@ -1,36 +1,26 @@
-# Implementation Plan - The "Masterpiece" Finale
+# Implementation Plan - Docker Deployment for Render
 
-This plan adds the final three high-end features to the Cyber Store: Wallet-based payments, Map-based delivery precision, and Smart Inventory management for product variants.
-
-## User Review Required
-
-> [!IMPORTANT]
-> - **Google Maps**: Precise map delivery requires a **Google Maps API Key**. I will set up the code, but you will need to enable the Maps SDK in your Google Cloud Console.
-> - **Inventory Shift**: We will move from simple "In Stock" booleans to real numbers per variant (e.g., specific stock for Red 128GB vs. Black 256GB).
+This plan enables the Cyber Store backend to be deployed using Docker, which is the most reliable method on Render when native PHP is not auto-detected.
 
 ## Proposed Changes
 
-### 1. 💰 Pay with Wallet (The Reward Loop)
-- **[MODIFY] Backend**: Update `orders` table to include `wallet_deduction`.
-- **[MODIFY] Backend**: Update `OrderController` to check user balance and subtract the requested amount from the total.
-- **[MODIFY] Frontend**: Add a "Use Wallet Balance" toggle in the Checkout Payment screen.
-- **Impact**: Users can apply their referral earnings to reduce the final price of their order.
+### 🐳 1. Dockerization
+- **[NEW] [Dockerfile](file:///home/temesgen/Documents/cyber_store_flutter/backend/Dockerfile)**:
+    - Base image: `php:8.2-apache`.
+    - Installs `pdo_pgsql` (for Neon DB connectivity).
+    - Automatically runs `php artisan migrate --force` on startup.
+    - Sets the correct permissions and Apache document root (`/public`).
+- **[NEW] [.dockerignore](file:///home/temesgen/Documents/cyber_store_flutter/backend/.dockerignore)**:
+    - Prevents sensitive files (like `.env`) and local dependencies from being uploaded to the Docker image.
 
-### 2. 📍 Precise Map-Based Delivery
-- **[MODIFY] Backend**: Add `latitude` and `longitude` to the `addresses` table.
-- **[MODIFY] Frontend**: Add `google_maps_flutter` package.
-- **[NEW] Map Picker**: A new screen where users can drag a map and "Drop a Pin" to set their exact delivery location.
-- **Impact**: Zero delivery errors and faster shipping.
+### 🚀 2. Git Update
+- Instructions to push the new Docker files to GitHub so Render can see them.
 
-### 3. 📉 Smart Inventory & Variant Stock
-- **[NEW] Backend**: Create a `product_variants` table (`product_id`, `color`, `storage`, `price`, `stock`).
-- **[MODIFY] Backend**: Update `Product` model to include a relationship to `variants`.
-- **[MODIFY] Frontend**: Update Product Details to disable "Add to Cart" if a specific color/storage combination is out of stock.
-- **[MODIFY] Admin**: Update Admin Form to allow setting stock numbers for each variant.
+### 🌐 3. Render Configuration
+- Guidelines for selecting the **Docker** environment in the Render dashboard.
 
 ## Verification Plan
 
 ### Manual Verification
-- **Wallet Test**: Refer a fake friend, earn 50 ETB, and verify that you can use that 50 ETB to lower the price of your next order.
-- **Map Test**: Add a new address, use the map to pick a location in Addis, and verify the coordinates are saved in the database.
-- **Inventory Test**: Set a product variant (e.g., Blue 128GB) to 0 stock as an Admin, then verify the customer cannot add that specific version to their cart.
+- **Build Success**: Monitor the Render logs to ensure the Docker image builds correctly and Apache starts.
+- **Database Connection**: Verify that the "migrate" command runs successfully during the Docker startup phase.
