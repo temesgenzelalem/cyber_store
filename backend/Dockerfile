@@ -1,10 +1,10 @@
 FROM php:8.2-apache
 
-# Install system dependencies and PHP extensions using a faster installer
+# Install high-speed PHP extensions (removed slow-compiling GD for initial speed)
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/install-php-extensions && \
-    install-php-extensions pdo_pgsql bcmath gd zip intl
+    install-php-extensions pdo_pgsql bcmath zip intl
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -15,7 +15,7 @@ WORKDIR /var/www/html
 # Copy project files
 COPY . .
 
-# Ensure standard Laravel directories exist and have correct permissions
+# Ensure standard Laravel directories exist
 RUN mkdir -p storage/framework/cache/data \
              storage/framework/sessions \
              storage/framework/views \
@@ -28,18 +28,16 @@ RUN mkdir -p storage/framework/cache/data \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Install dependencies with no-audit to bypass security advisory blocks
+# Install dependencies (Standard Laravel 10)
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-audit
 
-# Update Apache document root to Laravel's public folder
+# Update Apache document root
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Expose port 80
 EXPOSE 80
 
-# Professional Start Script
 RUN echo '#!/bin/sh\n\
 php artisan migrate --force\n\
 php artisan config:cache\n\
