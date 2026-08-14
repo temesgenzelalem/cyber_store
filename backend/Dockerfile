@@ -4,7 +4,7 @@ FROM php:8.2-apache
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/install-php-extensions && \
-    install-php-extensions pdo_pgsql bcmath zip
+    install-php-extensions pdo_pgsql bcmath zip gd
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -26,10 +26,7 @@ RUN mkdir -p storage/framework/cache/data \
              storage/framework/views \
              storage/logs \
              bootstrap/cache && \
-    touch storage/logs/laravel.log && \
-    chown -R www-data:www-data /var/www/html/storage \
-                               /var/www/html/bootstrap/cache \
-                               /var/www/html/storage/logs/laravel.log && \
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Install Composer
@@ -44,13 +41,16 @@ EXPOSE 80
 
 # Professional Start Script
 RUN echo '#!/bin/sh\n\
-# Set permissions again at runtime to be 100% sure\n\
+# Set permissions again at runtime\n\
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache\n\
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache\n\
 \n\
-php artisan migrate --force\n\
-php artisan config:cache\n\
-php artisan route:cache\n\
+# We do NOT run migrations automatically here to prevent startup crashes if DB is locked\n\
+# Instead we clear caches to ensure fresh code is used\n\
+php artisan config:clear\n\
+php artisan route:clear\n\
+php artisan view:clear\n\
+\n\
 apache2-foreground' > /usr/local/bin/start.sh
 
 RUN chmod +x /usr/local/bin/start.sh
