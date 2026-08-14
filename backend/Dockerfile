@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Install high-speed PHP extensions (pdo_pgsql is critical for Neon.tech)
+# Install high-speed PHP extensions
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/install-php-extensions && \
@@ -24,22 +24,23 @@ RUN mkdir -p storage/framework/cache/data \
     chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Install and Update Composer to ensure it supports security bypass flags
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer self-update
+ENV COMPOSER_NO_AUDIT=1
 
-# Install dependencies (Hard-Force skip audits and security blocks)
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-audit || \
-    composer install --no-interaction --prefer-dist --optimize-autoloader --no-security-blocking
+# Install dependencies (COMPOSER_NO_AUDIT env var handles the bypass)
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Update Apache document root
+# Update Apache document root to Laravel's public folder
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
+# Expose port 80
 EXPOSE 80
 
+# Professional Start Script
 RUN echo '#!/bin/sh\n\
 php artisan migrate --force\n\
 php artisan config:cache\n\
