@@ -1,16 +1,10 @@
 FROM php:8.2-apache
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    zip \
-    unzip \
-    git \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    && docker-php-ext-install pdo pdo_pgsql bcmath gd zip
+# Install system dependencies and PHP extensions using a faster installer
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/install-php-extensions && \
+    install-php-extensions pdo_pgsql bcmath gd zip intl
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -21,14 +15,20 @@ WORKDIR /var/www/html
 # Copy project files
 COPY . .
 
-# Create missing directories and set permissions
-RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Ensure standard Laravel directories exist and have correct permissions
+RUN mkdir -p storage/framework/cache/data \
+             storage/framework/sessions \
+             storage/framework/views \
+             storage/logs \
+             bootstrap/cache && \
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
+
+# Install dependencies with no-audit to bypass security advisory blocks
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-audit
 
 # Update Apache document root to Laravel's public folder
@@ -39,11 +39,11 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 # Expose port 80
 EXPOSE 80
 
-# Start script
+# Professional Start Script
 RUN echo '#!/bin/sh\n\
+php artisan migrate --force\n\
 php artisan config:cache\n\
 php artisan route:cache\n\
-php artisan migrate --force\n\
 apache2-foreground' > /usr/local/bin/start.sh
 
 RUN chmod +x /usr/local/bin/start.sh
