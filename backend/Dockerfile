@@ -39,6 +39,9 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 
 EXPOSE 80
 
+# TEMPORARY: Enable debug to see the 500 error cause
+ENV APP_DEBUG=true
+
 # Improved startup script
 RUN echo '#!/bin/sh\n\
 php artisan migrate --force\n\
