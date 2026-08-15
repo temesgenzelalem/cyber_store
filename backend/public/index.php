@@ -1,34 +1,24 @@
 <?php
-
-use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Http\Request;
-
-define('LARAVEL_START', microtime(true));
-
-// DEBUG: Catch all errors
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+echo "PHP STARTING<br>";
 
 try {
-    if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
-        require $maintenance;
-    }
-
+    echo "REQUIRE AUTOLOAD<br>";
     require __DIR__.'/../vendor/autoload.php';
-
+    echo "REQUIRE APP<br>";
     $app = require_once __DIR__.'/../bootstrap/app.php';
+    echo "APP CREATED<br>";
 
-    $kernel = $app->make(Kernel::class);
+    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+    echo "KERNEL CREATED<br>";
 
     $response = $kernel->handle(
-        $request = Request::capture()
-    )->send();
+        $request = Illuminate\Http\Request::capture()
+    );
+    echo "REQUEST HANDLED<br>";
 
+    $response->send();
     $kernel->terminate($request, $response);
 } catch (\Throwable $e) {
-    echo "<h1>LARAVEL CRASHED</h1>";
-    echo "<p><b>Error:</b> " . $e->getMessage() . "</p>";
-    echo "<p><b>File:</b> " . $e->getFile() . " on line " . $e->getLine() . "</p>";
-    echo "<h3>Stack Trace:</h3>";
-    echo "<pre>" . $e->getTraceAsString() . "</pre>";
+    echo "<h1>CRASH</h1>";
+    echo "Error: " . $e->getMessage();
 }
