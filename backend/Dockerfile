@@ -39,6 +39,7 @@ EXPOSE 80
 
 # Clean startup script
 RUN echo '#!/bin/sh\n\
+php artisan migrate --force\n\
 php artisan config:clear\n\
 php artisan cache:clear\n\
 php artisan view:clear\n\
