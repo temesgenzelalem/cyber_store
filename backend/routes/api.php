@@ -21,24 +21,27 @@ use App\Http\Controllers\Api\AdminProductController;
 use App\Http\Controllers\Api\AdminProfileController;
 use App\Http\Controllers\Api\VerificationController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
-
 Route::get('/migrate', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh --force --seed');
+        \Illuminate\Support\Facades\DB::statement('DROP SCHEMA public CASCADE');
+        \Illuminate\Support\Facades\DB::statement('CREATE SCHEMA public');
+        \Illuminate\Support\Facades\DB::statement('GRANT ALL ON SCHEMA public TO public');
+
+        \Illuminate\Support\Facades\Artisan::call('migrate --force');
+        $m = \Illuminate\Support\Facades\Artisan::output();
+
+        \Illuminate\Support\Facades\Artisan::call('db:seed --force');
+        $s = \Illuminate\Support\Facades\Artisan::output();
+
         return response()->json([
             'status' => 'success',
-            'output' => \Illuminate\Support\Facades\Artisan::output()
+            'migrate' => $m,
+            'seed' => $s
         ]);
     } catch (\Throwable $e) {
         return response()->json([
             'status' => 'error',
-            'message' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
+            'message' => $e->getMessage()
         ], 500);
     }
 });
@@ -46,33 +49,24 @@ Route::get('/migrate', function () {
 Route::get('/diag', function () {
     try {
         \Illuminate\Support\Facades\DB::connection()->getPdo();
-        $migrationStatus = \Illuminate\Support\Facades\Artisan::call('migrate:status');
-        $migrationOutput = \Illuminate\Support\Facades\Artisan::output();
-
+        \Illuminate\Support\Facades\Artisan::call('migrate:status');
         return response()->json([
             'status' => 'ok',
-            'database' => 'connected',
-            'migrations' => $migrationOutput,
-            'env' => app()->environment(),
+            'output' => \Illuminate\Support\Facades\Artisan::output()
         ]);
     } catch (\Throwable $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage(),
-        ], 500);
+        return response()->json(['error' => $e->getMessage()], 500);
     }
 });
 
 Route::get('/test', function () {
-    return response()->json(['status' => 'ok', 'message' => 'Backend is working!']);
+    return response()->json(['status' => 'ok']);
 });
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-
 Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/categories', [CategoryController::class, 'index']);
-
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/featured', [ProductController::class, 'featured']);
 Route::get('/products/new-arrivals', [ProductController::class, 'newArrivals']);
