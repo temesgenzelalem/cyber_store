@@ -27,25 +27,27 @@ use App\Http\Controllers\Api\VerificationController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/migrate', function () {
+Route::get('/wipe', function () {
     try {
-        // Attempt to wipe the database first to ensure a clean slate
         \Illuminate\Support\Facades\Artisan::call('db:wipe --force');
-        $wipeOutput = \Illuminate\Support\Facades\Artisan::output();
-
-        // Run migrations
-        \Illuminate\Support\Facades\Artisan::call('migrate --force');
-        $migrateOutput = \Illuminate\Support\Facades\Artisan::output();
-
-        // Run seeders
-        \Illuminate\Support\Facades\Artisan::call('db:seed --force');
-        $seedOutput = \Illuminate\Support\Facades\Artisan::output();
-
         return response()->json([
             'status' => 'success',
-            'wipe' => $wipeOutput,
-            'migrate' => $migrateOutput,
-            'seed' => $seedOutput
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+});
+
+Route::get('/migrate', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate --force');
+        return response()->json([
+            'status' => 'success',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
         ]);
     } catch (\Throwable $e) {
         return response()->json([
