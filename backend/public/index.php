@@ -1,24 +1,22 @@
 <?php
-echo "PHP STARTING<br>";
 
-try {
-    echo "REQUIRE AUTOLOAD<br>";
-    require __DIR__.'/../vendor/autoload.php';
-    echo "REQUIRE APP<br>";
-    $app = require_once __DIR__.'/../bootstrap/app.php';
-    echo "APP CREATED<br>";
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
 
-    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
-    echo "KERNEL CREATED<br>";
+define('LARAVEL_START', microtime(true));
 
-    $response = $kernel->handle(
-        $request = Illuminate\Http\Request::capture()
-    );
-    echo "REQUEST HANDLED<br>";
-
-    $response->send();
-    $kernel->terminate($request, $response);
-} catch (\Throwable $e) {
-    echo "<h1>CRASH</h1>";
-    echo "Error: " . $e->getMessage();
+if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+    require $maintenance;
 }
+
+require __DIR__.'/../vendor/autoload.php';
+
+$app = require_once __DIR__.'/../bootstrap/app.php';
+
+$kernel = $app->make(Kernel::class);
+
+$response = $kernel->handle(
+    $request = Request::capture()
+)->send();
+
+$kernel->terminate($request, $response);

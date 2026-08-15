@@ -19,8 +19,13 @@ WORKDIR /var/www/html
 # Copy project files
 COPY . .
 
-# Fix permissions for storage and cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+# Ensure standard Laravel directories exist and have CORRECT permissions
+RUN mkdir -p storage/framework/cache/data \
+             storage/framework/sessions \
+             storage/framework/views \
+             storage/logs \
+             bootstrap/cache && \
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Install Composer
@@ -32,5 +37,14 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-s
 
 EXPOSE 80
 
-# Clean startup (NO MIGRATIONS to prevent boot crash)
-CMD ["apache2-foreground"]
+# Clean startup script
+RUN echo '#!/bin/sh\n\
+php artisan config:clear\n\
+php artisan cache:clear\n\
+php artisan view:clear\n\
+php artisan route:clear\n\
+apache2-foreground' > /usr/local/bin/start.sh
+
+RUN chmod +x /usr/local/bin/start.sh
+
+CMD ["/usr/local/bin/start.sh"]
