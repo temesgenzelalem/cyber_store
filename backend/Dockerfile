@@ -26,8 +26,8 @@ RUN mkdir -p storage/framework/cache/data \
              storage/framework/views \
              storage/logs \
              bootstrap/cache && \
-    chmod -R 775 storage bootstrap/cache && \
-    chown -R www-data:www-data /var/www/html
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -45,16 +45,19 @@ ENV APP_ENV=production
 
 # Professional Start Script
 RUN echo '#!/bin/sh\n\
-# Force permissions at runtime\n\
+# Force correct permissions again at runtime\n\
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache\n\
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache\n\
 \n\
 # FORCE FRESH MIGRATION AND SEEDING ON EVERY BOOT TEMPORARILY\n\
+# This will clear the transaction abort state in Postgres\n\
 php artisan migrate:fresh --force --seed || echo "Migration failed"\n\
 \n\
 # Clear caches to ensure fresh state\n\
 php artisan config:clear\n\
 php artisan route:clear\n\
 \n\
+# Start Apache\n\
 apache2-foreground' > /usr/local/bin/start.sh
 
 RUN chmod +x /usr/local/bin/start.sh
