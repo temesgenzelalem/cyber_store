@@ -58,6 +58,15 @@ Route::get('/migrate', function () {
     }
 });
 
+Route::get('/tables', function () {
+    try {
+        $tables = \Illuminate\Support\Facades\DB::select("SELECT table_name FROM information_schema.tables WHERE table_schema \u003d \u0027public\u0027");
+        return response()->json($tables);
+    } catch (\Throwable $e) {
+        return response()->json([\u0027error\u0027 \u003d\u003e $e-\u003egetMessage()], 500);
+    }
+});
+
 Route::get('/diag', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate:status');
