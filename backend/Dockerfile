@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Install high-speed PHP extensions (Keep it minimal for speed and stability)
+# Install high-speed PHP extensions
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && \
     install-php-extensions pdo_pgsql zip bcmath gd
@@ -38,7 +38,9 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-s
 
 EXPOSE 80
 
-# DEFAULT ENVIRONMENT for Docker
+# FORCE DEBUG MODE
+ENV APP_DEBUG=true
+ENV APP_ENV=local
 ENV LOG_CHANNEL=errorlog
 
 # Professional Start Script
@@ -48,6 +50,12 @@ chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache\n\
 \n\
 # Run migrations with force\n\
 php artisan migrate --force || echo "Migration skipped"\n\
+\n\
+# Clear every single cache\n\
+php artisan config:clear\n\
+php artisan route:clear\n\
+php artisan view:clear\n\
+php artisan cache:clear\n\
 \n\
 apache2-foreground' > /usr/local/bin/start.sh
 
