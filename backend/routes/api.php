@@ -27,6 +27,22 @@ use App\Http\Controllers\Api\VerificationController;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/migrate', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh --force --seed');
+        return response()->json([
+            'status' => 'success',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
+
 Route::get('/diag', function () {
     try {
         \Illuminate\Support\Facades\DB::connection()->getPdo();
