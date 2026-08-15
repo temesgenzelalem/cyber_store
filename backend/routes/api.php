@@ -29,10 +29,22 @@ use App\Http\Controllers\Api\VerificationController;
 
 Route::get('/migrate', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh --force --seed');
+        // Step 1: Drop everything manually
+        \Illuminate\Support\Facades\DB::statement('DROP SCHEMA public CASCADE');
+        \Illuminate\Support\Facades\DB::statement('CREATE SCHEMA public');
+
+        // Step 2: Run migrations
+        \Illuminate\Support\Facades\Artisan::call('migrate --force');
+        $migrateOutput \u003d \Illuminate\Support\Facades\Artisan::output();
+
+        // Step 3: Seed
+        \Illuminate\Support\Facades\Artisan::call('db:seed --force');
+        $seedOutput \u003d \Illuminate\Support\Facades\Artisan::output();
+
         return response()->json([
             'status' => 'success',
-            'output' => \Illuminate\Support\Facades\Artisan::output()
+            'migrate' => $migrateOutput,
+            'seed' => $seedOutput
         ]);
     } catch (\Throwable $e) {
         return response()->json([
