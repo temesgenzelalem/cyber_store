@@ -1,4 +1,9 @@
 <?php
+/**
+ * ****************************************************************************
+ * FORCED CACHE BREAKER VERSION 7.0.0 - SATURDAY MORNING
+ * ****************************************************************************
+ */
 
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
