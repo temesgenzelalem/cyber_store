@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.2.18-apache
 
 # Install high-speed PHP extensions (Keep it minimal for speed and stability)
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
@@ -38,12 +38,12 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-s
 
 EXPOSE 80
 
-# FORCE RE-DEPLOY BY CHANGING ENV
-ENV DEPLOY_TIMESTAMP=20260815_0835
+# FORCE RE-DEPLOY BY CHANGING BASE IMAGE AND ENV
+ENV DEPLOY_TIMESTAMP=20260815_0838
 ENV LOG_CHANNEL=errorlog
 ENV APP_DEBUG=true
 
-# Professional Start Script (NO AUTO MIGRATIONS)
+# Professional Start Script
 RUN echo '#!/bin/sh\n\
 # Force permissions at runtime\n\
 chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache\n\
