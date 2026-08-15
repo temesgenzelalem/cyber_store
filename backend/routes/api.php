@@ -29,7 +29,7 @@ use App\Http\Controllers\Api\VerificationController;
 
 Route::get('/migrate', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('migrate --force');
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh --force');
         \Illuminate\Support\Facades\Artisan::call('db:seed --force');
         return response()->json([
             'status' => 'success',
@@ -38,7 +38,8 @@ Route::get('/migrate', function () {
     } catch (\Throwable $e) {
         return response()->json([
             'status' => 'error',
-            'message' => $e->getMessage()
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
         ], 500);
     }
 });
