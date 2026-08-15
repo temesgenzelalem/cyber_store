@@ -88,6 +88,10 @@ Route::get('/diag', function () {
     }
 });
 
+Route::get('/version', function () {
+    return response()->json(['commit' \u003d\u003e '811c356']);
+});
+
 Route::get('/test', function () {
     return response()->json(['status' => 'ok', 'message' => 'Backend is working!']);
 });
