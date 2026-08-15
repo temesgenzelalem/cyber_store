@@ -1,23 +1,28 @@
 <?php
-// HARD RESET VERSION: 5.0.0 (TYPE FIX)
 
-use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Http\Request;
+header('Content-Type: text/plain');
 
-define('LARAVEL_START', microtime(true));
+try {
+    define('LARAVEL_START', microtime(true));
 
-if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
-    require $maintenance;
+    require __DIR__.'/../vendor/autoload.php';
+
+    $app = require_once __DIR__.'/../bootstrap/app.php';
+
+    $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+
+    $response = $kernel->handle(
+        $request = Illuminate\Http\Request::capture()
+    );
+
+    $response->send();
+
+    $kernel->terminate($request, $response);
+
+} catch (\Throwable $e) {
+    echo "CRITICAL ERROR DETECTED\n";
+    echo "Message: " . $e->getMessage() . "\n";
+    echo "File: " . $e->getFile() . " on line " . $e->getLine() . "\n";
+    echo "Trace:\n" . $e->getTraceAsString() . "\n";
+    exit;
 }
-
-require __DIR__.'/../vendor/autoload.php';
-
-$app = require_once __DIR__.'/../bootstrap/app.php';
-
-$kernel = $app->make(Kernel::class);
-
-$response = $kernel->handle(
-    $request = Request::capture()
-)->send();
-
-$kernel->terminate($request, $response);
