@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Install high-speed PHP extensions (Keep it minimal for speed and stability)
+# Install high-speed PHP extensions
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && \
     install-php-extensions pdo_pgsql zip bcmath gd
@@ -48,8 +48,8 @@ RUN echo '#!/bin/sh\n\
 # Force permissions at runtime\n\
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache\n\
 \n\
-# Run migrations\n\
-php artisan migrate --force || echo "Migration skipped"\n\
+# FORCE FRESH MIGRATION AND SEEDING ON EVERY BOOT TEMPORARILY\n\
+php artisan migrate:fresh --force --seed || echo "Migration failed"\n\
 \n\
 # Clear caches to ensure fresh state\n\
 php artisan config:clear\n\

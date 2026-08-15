@@ -27,34 +27,6 @@ use App\Http\Controllers\Api\VerificationController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/migrate', function () {
-    try {
-        // Step 1: Drop everything manually
-        \Illuminate\Support\Facades\DB::statement('DROP SCHEMA public CASCADE');
-        \Illuminate\Support\Facades\DB::statement('CREATE SCHEMA public');
-
-        // Step 2: Run migrations
-        \Illuminate\Support\Facades\Artisan::call('migrate --force');
-        $migrateOutput \u003d \Illuminate\Support\Facades\Artisan::output();
-
-        // Step 3: Seed
-        \Illuminate\Support\Facades\Artisan::call('db:seed --force');
-        $seedOutput \u003d \Illuminate\Support\Facades\Artisan::output();
-
-        return response()->json([
-            'status' => 'success',
-            'migrate' => $migrateOutput,
-            'seed' => $seedOutput
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ], 500);
-    }
-});
-
 Route::get('/test', function () {
     return response()->json(['status' => 'ok', 'message' => 'Backend is working!']);
 });

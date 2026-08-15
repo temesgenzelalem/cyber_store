@@ -3,9 +3,6 @@
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 define('LARAVEL_START', microtime(true));
 
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
@@ -20,8 +17,6 @@ $kernel = $app->make(Kernel::class);
 
 $response = $kernel->handle(
     $request = Request::capture()
-);
-
-$response->send();
+)->send();
 
 $kernel->terminate($request, $response);
