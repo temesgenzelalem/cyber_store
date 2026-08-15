@@ -18,7 +18,15 @@ try {
     echo "Executing GRANT\n";
     $db->statement('GRANT ALL ON SCHEMA public TO public');
 
-    echo "SUCCESS: Database has been wiped and reset.\n";
+    echo "Running Migrations...\n";
+    Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    echo Illuminate\Support\Facades\Artisan::output();
+
+    echo "Running Seeds...\n";
+    Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+    echo Illuminate\Support\Facades\Artisan::output();
+
+    echo "SUCCESS: Database has been wiped, migrated, and seeded.\n";
 } catch (Exception $e) {
     echo "ERROR: " . $e->getMessage() . "\n";
     echo "TRACE:\n" . $e->getTraceAsString() . "\n";
