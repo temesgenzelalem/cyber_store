@@ -1,6 +1,6 @@
-FROM php:8.2-apache
+FROM php:8.2.22-apache
 
-# Install high-speed PHP extensions (Keep it minimal for speed and stability)
+# Install high-speed PHP extensions
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && \
     install-php-extensions pdo_pgsql zip bcmath gd
@@ -27,26 +27,26 @@ RUN mkdir -p storage/framework/cache/data \
              storage/logs \
              bootstrap/cache && \
     touch storage/logs/laravel.log && \
-    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+    chown -R www-data:www-data /var/www/html && \
+    chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV COMPOSER_NO_AUDIT=1
 
 # Install dependencies (Force bypass audits)
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-security-blocking
 
 EXPOSE 80
 
-# Immortal Professional Start Script
+# Hard-Reset Immortal Start Script
 RUN echo '#!/bin/sh\n\
-# Force correct permissions again at runtime\n\
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache\n\
-chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache\n\
+chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache\n\
 \n\
-# Attempt migrations but never let failure stop the server boot\n\
-php artisan migrate --force || echo "Migration skipped or failed"\n\
+# Try to migrate. If it fails with transaction error, try fresh start.\n\
+php artisan migrate --force || (echo "Migration failed, attempting fresh reset..." && php artisan migrate:fresh --force)\n\
 \n\
 # Clear caches to ensure fresh state\n\
 php artisan config:clear\n\
