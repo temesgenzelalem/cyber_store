@@ -27,6 +27,22 @@ use App\Http\Controllers\Api\VerificationController;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/migrate', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate --force');
+        \Illuminate\Support\Facades\Artisan::call('db:seed --force');
+        return response()->json([
+            'status' => 'success',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+});
+
 Route::get('/test', function () {
     return response()->json(['status' => 'ok', 'message' => 'Backend is working!']);
 });
