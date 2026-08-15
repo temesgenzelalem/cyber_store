@@ -29,7 +29,10 @@ use App\Http\Controllers\Api\VerificationController;
 
 Route::get('/migrate', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh --force');
+        // Aggressive Cleanup
+        \Illuminate\Support\Facades\DB::statement('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
+
+        \Illuminate\Support\Facades\Artisan::call('migrate --force');
         return response()->json([
             'status' => 'success',
             'output' => \Illuminate\Support\Facades\Artisan::output()
