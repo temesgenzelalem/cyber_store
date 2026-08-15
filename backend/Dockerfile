@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Install high-speed PHP extensions
+# Install high-speed PHP extensions (Keep it minimal for speed and stability)
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && \
     install-php-extensions pdo_pgsql zip bcmath gd
@@ -21,7 +21,6 @@ WORKDIR /var/www/html
 COPY . .
 
 # Ensure standard Laravel directories exist and have CORRECT permissions
-# We use 777 for storage temporarily to bypass any Render-specific permission issues
 RUN mkdir -p storage/framework/cache/data \
              storage/framework/sessions \
              storage/framework/views \
@@ -39,19 +38,16 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-s
 
 EXPOSE 80
 
+# DEFAULT ENVIRONMENT for Docker
+ENV LOG_CHANNEL=errorlog
+
 # Professional Start Script
 RUN echo '#!/bin/sh\n\
-# Force permissions at runtime every single time\n\
+# Force permissions at runtime\n\
 chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache\n\
 \n\
 # Run migrations with force\n\
-php artisan migrate --force || echo "Migration failed"\n\
-\n\
-# Clear every single cache to prevent stale code\n\
-php artisan config:clear\n\
-php artisan route:clear\n\
-php artisan view:clear\n\
-php artisan cache:clear\n\
+php artisan migrate --force || echo "Migration skipped"\n\
 \n\
 apache2-foreground' > /usr/local/bin/start.sh
 
