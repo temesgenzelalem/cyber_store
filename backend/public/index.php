@@ -1,5 +1,5 @@
 <?php
-// HARD RESET VERSION: 4.0.0
+// HARD RESET VERSION: 5.0.0 (TYPE FIX)
 
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
