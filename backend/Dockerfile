@@ -1,6 +1,6 @@
-FROM php:8.2.17-apache
+FROM php:8.2-apache
 
-# Install high-speed PHP extensions
+# Install high-speed PHP extensions (Keep it minimal for speed and stability)
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && \
     install-php-extensions pdo_pgsql zip bcmath gd
@@ -26,36 +26,34 @@ RUN mkdir -p storage/framework/cache/data \
              storage/framework/views \
              storage/logs \
              bootstrap/cache && \
-    chmod -R 777 storage bootstrap/cache && \
+    chmod -R 775 storage bootstrap/cache && \
     chown -R www-data:www-data /var/www/html
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Install dependencies
+# Install dependencies (Force bypass audits)
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-security-blocking
 
 EXPOSE 80
 
-# FORCE RE-DEPLOY BY CHANGING BASE IMAGE AND ENV
-ENV DEPLOY_VERSION=8.0.0
+# Production Environment
 ENV LOG_CHANNEL=errorlog
-ENV APP_DEBUG=true
+ENV APP_DEBUG=false
+ENV APP_ENV=production
 
 # Professional Start Script
 RUN echo '#!/bin/sh\n\
 # Force permissions at runtime\n\
-chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache\n\
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache\n\
 \n\
-# Attempt migrations\n\
+# Run migrations\n\
 php artisan migrate --force || echo "Migration skipped"\n\
 \n\
-# Clear every cache\n\
+# Clear caches to ensure fresh state\n\
 php artisan config:clear\n\
 php artisan route:clear\n\
-php artisan view:clear\n\
-php artisan cache:clear\n\
 \n\
 apache2-foreground' > /usr/local/bin/start.sh
 
