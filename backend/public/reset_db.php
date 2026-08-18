@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: text/plain');
-echo "DB RESET START\n";
+echo "DB RESET START (v8.1.0)\n";
 
 require __DIR__.'/../vendor/autoload.php';
 $app = require_once __DIR__.'/../bootstrap/app.php';
@@ -8,15 +8,27 @@ $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 try {
-    $db = Illuminate\Support\Facades\DB::connection();
-    echo "Connecting to: " . $db->getDatabaseName() . "\n";
+    $config = config('database.connections.pgsql');
+    $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['database']}";
+    echo "Connecting raw PDO to: {$config['host']}\n";
 
-    echo "Executing DROP SCHEMA\n";
-    $db->statement('DROP SCHEMA public CASCADE');
-    echo "Executing CREATE SCHEMA\n";
-    $db->statement('CREATE SCHEMA public');
-    echo "Executing GRANT\n";
-    $db->statement('GRANT ALL ON SCHEMA public TO public');
+    // Connect without Laravel's wrapper
+    $pdo = new PDO($dsn, $config['username'], $config['password']);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    echo "Executing DROP SCHEMA public CASCADE\n";
+    $pdo->exec("DROP SCHEMA IF EXISTS public CASCADE");
+    echo "Executing CREATE SCHEMA public\n";
+    $pdo->exec("CREATE SCHEMA public");
+    echo "Executing GRANT ALL ON SCHEMA public TO public\n";
+    $pdo->exec("GRANT ALL ON SCHEMA public TO public");
+
+    // Close connection
+    $pdo = null;
+    echo "Raw reset successful. Now running Laravel Migrations...\n";
+
+    // Refresh Laravel's DB connection to be sure
+    Illuminate\Support\Facades\DB::purge('pgsql');
 
     echo "Running Migrations...\n";
     Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
