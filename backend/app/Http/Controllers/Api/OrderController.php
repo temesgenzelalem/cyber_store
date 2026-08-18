@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Cart;
+use App\Models\User;
+use App\Models\Coupon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -65,7 +67,7 @@ class OrderController extends Controller
 
             // If coupon used, increment count
             if ($request->coupon_id) {
-                \App\Models\Coupon::find($request->coupon_id)->increment('used_count');
+                Coupon::find($request->coupon_id)->increment('used_count');
             }
 
             foreach ($request->items as $item) {

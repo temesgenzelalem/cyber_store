@@ -10,6 +10,7 @@ class BannerController extends Controller
 {
     public function index()
     {
-        return Banner::orderBy('order')->get();
+        // Avoid 'order' keyword issues in Postgres
+        return Banner::orderBy('id')->get();
     }
 }
