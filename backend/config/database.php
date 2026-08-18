@@ -2,14 +2,22 @@
 
 use Illuminate\Support\Str;
 
+$db_url = env('DATABASE_URL', env('DB_URL'));
 $host = env('DB_HOST', '127.0.0.1');
-if (strpos($host, '-pooler') !== false) {
+
+if ($db_url && strpos($db_url, '-pooler') !== false) {
+    $db_url = str_replace('-pooler', '', $db_url);
+}
+
+if ($host && strpos($host, '-pooler') !== false) {
     $host = str_replace('-pooler', '', $host);
 }
 
-$db_url = env('DATABASE_URL', env('DB_URL'));
-if ($db_url && strpos($db_url, '-pooler') !== false) {
-    $db_url = str_replace('-pooler', '', $db_url);
+// Neon often needs this for migrations to work with transactions
+$sslmode = 'require';
+if ($db_url && strpos($db_url, 'sslmode=') === false) {
+    $separator = (strpos($db_url, '?') === false) ? '?' : '&';
+    // $db_url .= $separator . 'sslmode=require'; // Already usually in the URL
 }
 
 return [
