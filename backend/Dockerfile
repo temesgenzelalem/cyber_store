@@ -33,9 +33,8 @@ RUN mkdir -p storage/framework/cache/data \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Install dependencies and FORCE autoloader refresh
+# Install dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-security-blocking
-RUN composer dump-autoload --optimize
 
 EXPOSE 80
 
@@ -50,7 +49,7 @@ RUN echo '#!/bin/sh\n\
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache\n\
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache\n\
 \n\
-# Attempt migrations (safe since they were already done by reset_db.php)\n\
+# Run migrations\n\
 php artisan migrate --force || echo "Migration skipped"\n\
 \n\
 # Clear caches to ensure fresh state\n\

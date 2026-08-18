@@ -21,57 +21,22 @@ use App\Http\Controllers\Api\AdminProductController;
 use App\Http\Controllers\Api\AdminProfileController;
 use App\Http\Controllers\Api\VerificationController;
 
-Route::get('/migrate', function () {
-    try {
-        \Illuminate\Support\Facades\DB::statement('DROP SCHEMA public CASCADE');
-        \Illuminate\Support\Facades\DB::statement('CREATE SCHEMA public');
-        \Illuminate\Support\Facades\DB::statement('GRANT ALL ON SCHEMA public TO public');
-
-        \Illuminate\Support\Facades\Artisan::call('migrate --force');
-        $m = \Illuminate\Support\Facades\Artisan::output();
-
-        \Illuminate\Support\Facades\Artisan::call('db:seed --force');
-        $s = \Illuminate\Support\Facades\Artisan::output();
-
-        return response()->json([
-            'status' => 'success',
-            'migrate' => $m,
-            'seed' => $s
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ], 500);
-    }
-});
-
-Route::get('/diag', function () {
-    try {
-        \Illuminate\Support\Facades\DB::connection()->getPdo();
-        \Illuminate\Support\Facades\Artisan::call('migrate:status');
-        return response()->json([
-            'status' => 'ok',
-            'output' => \Illuminate\Support\Facades\Artisan::output()
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-});
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/test', function () {
-    try {
-        $count = \Illuminate\Support\Facades\DB::table('banners')->count();
-        return response()->json(['status' => 'ok', 'banners' => $count]);
-    } catch (\Throwable $e) {
-        return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
-    }
+    return response()->json(['status' => 'ok', 'message' => 'Backend is working!']);
 });
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
 Route::get('/banners', [BannerController::class, 'index']);
 Route::get('/categories', [CategoryController::class, 'index']);
+
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/featured', [ProductController::class, 'featured']);
 Route::get('/products/new-arrivals', [ProductController::class, 'newArrivals']);
