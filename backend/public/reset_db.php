@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: text/plain');
-echo "DB RESET START (v8.2.0)\n";
+echo "DB RESET START (v8.3.0)\n";
 
 require __DIR__.'/../vendor/autoload.php';
 $app = require_once __DIR__.'/../bootstrap/app.php';
@@ -9,14 +9,7 @@ $kernel->bootstrap();
 
 try {
     $config = config('database.connections.pgsql');
-    echo "RESOLVED HOST: " . ($config['host'] ?? 'N/A') . "\n";
-    echo "RESOLVED URL: " . ($config['url'] ?? 'N/A') . "\n";
-
     $dsn = "pgsql:host={$config['host']};port={$config['port']};dbname={$config['database']}";
-    if (!empty($config['url'])) {
-       // PDO can't always take the full postgres:// URL, so we rely on components
-    }
-
     echo "Connecting raw PDO to: {$config['host']}\n";
 
     $pdo = new PDO($dsn, $config['username'], $config['password']);
@@ -35,8 +28,13 @@ try {
     Illuminate\Support\Facades\DB::purge('pgsql');
 
     echo "Running Migrations...\n";
-    // Force a fresh migration to be safe
-    Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--force' => true, '--seed' => true]);
+    $mCode = Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    echo "Migration Exit Code: $mCode\n";
+    echo Illuminate\Support\Facades\Artisan::output();
+
+    echo "Running Seeds...\n";
+    $sCode = Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+    echo "Seed Exit Code: $sCode\n";
     echo Illuminate\Support\Facades\Artisan::output();
 
     echo "SUCCESS: Database has been wiped, migrated, and seeded.\n";
