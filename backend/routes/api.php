@@ -60,7 +60,12 @@ Route::get('/diag', function () {
 });
 
 Route::get('/test', function () {
-    return response()->json(['status' => 'ok']);
+    try {
+        $count = \Illuminate\Support\Facades\DB::table('banners')->count();
+        return response()->json(['status' => 'ok', 'banners' => $count]);
+    } catch (\Throwable $e) {
+        return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+    }
 });
 
 Route::post('/register', [AuthController::class, 'register']);
