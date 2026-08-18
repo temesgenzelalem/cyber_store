@@ -13,13 +13,6 @@ if ($host && strpos($host, '-pooler') !== false) {
     $host = str_replace('-pooler', '', $host);
 }
 
-// Neon often needs this for migrations to work with transactions
-$sslmode = 'require';
-if ($db_url && strpos($db_url, 'sslmode=') === false) {
-    $separator = (strpos($db_url, '?') === false) ? '?' : '&';
-    // $db_url .= $separator . 'sslmode=require'; // Already usually in the URL
-}
-
 return [
 
     'default' => env('DB_CONNECTION', 'pgsql'),
@@ -48,7 +41,7 @@ return [
             'search_path' => 'public',
             'sslmode' => 'require',
             'options' => [
-                PDO::ATTR_EMULATE_PREPARES => true,
+                PDO::ATTR_EMULATE_PREPARES => false, // Set to false for Postgres
             ],
         ],
 
