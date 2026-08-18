@@ -2,6 +2,16 @@
 
 use Illuminate\Support\Str;
 
+$host = env('DB_HOST', '127.0.0.1');
+if (strpos($host, '-pooler') !== false) {
+    $host = str_replace('-pooler', '', $host);
+}
+
+$db_url = env('DATABASE_URL', env('DB_URL'));
+if ($db_url && strpos($db_url, '-pooler') !== false) {
+    $db_url = str_replace('-pooler', '', $db_url);
+}
+
 return [
 
     'default' => env('DB_CONNECTION', 'pgsql'),
@@ -18,17 +28,20 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => (string) env('DATABASE_URL', env('DB_URL')),
-            'host' => (string) env('DB_HOST', '127.0.0.1'),
-            'port' => (string) env('DB_PORT', '5432'),
-            'database' => (string) env('DB_DATABASE', 'forge'),
-            'username' => (string) env('DB_USERNAME', 'forge'),
-            'password' => (string) env('DB_PASSWORD', ''),
+            'url' => $db_url,
+            'host' => $host,
+            'port' => env('DB_PORT', '5432'),
+            'database' => env('DB_DATABASE', 'forge'),
+            'username' => env('DB_USERNAME', 'forge'),
+            'password' => env('DB_PASSWORD', ''),
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'require',
+            'options' => [
+                PDO::ATTR_EMULATE_PREPARES => true,
+            ],
         ],
 
     ],
