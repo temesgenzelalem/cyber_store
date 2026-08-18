@@ -33,8 +33,9 @@ RUN mkdir -p storage/framework/cache/data \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Install dependencies (Force bypass audits)
+# Install dependencies and FORCE autoloader refresh
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-security-blocking
+RUN composer dump-autoload --optimize
 
 EXPOSE 80
 
@@ -45,19 +46,17 @@ ENV APP_ENV=production
 
 # Professional Start Script
 RUN echo '#!/bin/sh\n\
-# Force correct permissions again at runtime\n\
+# Force permissions at runtime\n\
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache\n\
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache\n\
 \n\
-# FORCE FRESH MIGRATION AND SEEDING ON EVERY BOOT TEMPORARILY\n\
-# This will clear the transaction abort state in Postgres\n\
-php artisan migrate:fresh --force --seed || echo "Migration failed"\n\
+# Attempt migrations (safe since they were already done by reset_db.php)\n\
+php artisan migrate --force || echo "Migration skipped"\n\
 \n\
 # Clear caches to ensure fresh state\n\
 php artisan config:clear\n\
 php artisan route:clear\n\
 \n\
-# Start Apache\n\
 apache2-foreground' > /usr/local/bin/start.sh
 
 RUN chmod +x /usr/local/bin/start.sh
